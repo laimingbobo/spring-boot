@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,7 @@ public class AutoConfigurationImportSelector
 			checkExcludedClasses(configurations, exclusions);
 			configurations.removeAll(exclusions);
 			configurations = filter(configurations, autoConfigurationMetadata);
-			fireAutoConfigurationImportListeners(configurations, exclusions);
+			fireAutoConfigurationImportEvents(configurations, exclusions);
 			return configurations.toArray(new String[configurations.size()]);
 		}
 		catch (IOException ex) {
@@ -222,8 +223,8 @@ public class AutoConfigurationImportSelector
 				String name = entry.getKey();
 				Object value = entry.getValue();
 				if (name.isEmpty() || name.startsWith("[") && value != null) {
-					excludes.addAll(
-							StringUtils.commaDelimitedListToSet(String.valueOf(value)));
+					excludes.addAll(new HashSet<String>(Arrays.asList(StringUtils
+							.tokenizeToStringArray(String.valueOf(value), ","))));
 				}
 			}
 			return excludes;
@@ -300,7 +301,7 @@ public class AutoConfigurationImportSelector
 		return Arrays.asList(value == null ? new String[0] : value);
 	}
 
-	private void fireAutoConfigurationImportListeners(List<String> configurations,
+	private void fireAutoConfigurationImportEvents(List<String> configurations,
 			Set<String> exclusions) {
 		List<AutoConfigurationImportListener> listeners = getAutoConfigurationImportListeners();
 		if (!listeners.isEmpty()) {

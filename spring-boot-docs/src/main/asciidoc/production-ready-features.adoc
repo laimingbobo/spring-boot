@@ -651,7 +651,7 @@ management server to be available via HTTP while the main application uses HTTPS
 	server.ssl.key-store=classpath:store.jks
 	server.ssl.key-password=secret
 	management.port=8080
-	management.ssl.enable=false
+	management.ssl.enabled=false
 ----
 
 Alternatively, both the main server and the management server can use SSL but with
@@ -664,7 +664,7 @@ different key stores:
 	server.ssl.key-store=classpath:main.jks
 	server.ssl.key-password=secret
 	management.port=8080
-	management.ssl.enable=true
+	management.ssl.enabled=true
 	management.ssl.key-store=classpath:management.jks
 	management.ssl.key-password=secret
 ----
@@ -1057,7 +1057,7 @@ In addition, any `MetricReader` that you define and mark as `@ExportMetricReader
 have its values exported by the default exporter.
 
 NOTE: This feature is enabling scheduling in your application (`@EnableScheduling`) which
-can be a problem if you run an integration tests as your own scheduled tasks will start.
+can be a problem if you run an integration test as your own scheduled tasks will start.
 You can disable this behaviour by setting `spring.metrics.export.enabled` to `false`.
 
 The default exporter is a `MetricCopyExporter` which tries to optimize itself by not
@@ -1386,7 +1386,7 @@ writes a PID file. Example:
 [indent=0]
 ----
 	org.springframework.context.ApplicationListener=\
-	org.springframework.boot.actuate.system.ApplicationPidFileWriter,\
+	org.springframework.boot.system.ApplicationPidFileWriter,\
 	org.springframework.boot.actuate.system.EmbeddedServerPortFileWriter
 ----
 

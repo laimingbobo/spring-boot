@@ -119,10 +119,13 @@ content into your application; rather pick only the properties that you need.
 	spring.messages.encoding=UTF-8 # Message bundles encoding.
 	spring.messages.fallback-to-system-locale=true # Set whether to fall back to the system Locale if no files for a specific Locale have been found.
 
+	# REACTOR
+	spring.reactor.stacktrace-mode.enabled=true # Set whether Reactor should collect stacktrace information at runtime.
+
 	# OUTPUT
 	spring.output.ansi.enabled=detect # Configure the ANSI output.
 
-	# PID FILE ({sc-spring-boot-actuator}/system/ApplicationPidFileWriter.{sc-ext}[ApplicationPidFileWriter])
+	# PID FILE ({sc-spring-boot}/system/ApplicationPidFileWriter.{sc-ext}[ApplicationPidFileWriter])
 	spring.pid.fail-on-write-error= # Fail if ApplicationPidFileWriter is used but it cannot write the PID file.
 	spring.pid.file= # Location of the PID file to write (if ApplicationPidFileWriter is used).
 
@@ -149,8 +152,6 @@ content into your application; rather pick only the properties that you need.
 	server.compression.mime-types= # Comma-separated list of MIME types that should be compressed. For instance `text/html,text/css,application/json`
 	server.compression.min-response-size= # Minimum response size that is required for compression to be performed. For instance 2048
 	server.connection-timeout= # Time in milliseconds that connectors will wait for another HTTP request before closing the connection. When not set, the connector's container-specific default will be used. Use a value of -1 to indicate no (i.e. infinite) timeout.
-	server.context-parameters.*= # Servlet context init parameters. For instance `server.context-parameters.a=alpha`
-	server.context-path= # Context path of the application.
 	server.display-name=application # Display name of the application.
 	server.max-http-header-size=0 # Maximum size in bytes of the HTTP message header.
 	server.error.include-stacktrace=never # When to include a "stacktrace" attribute.
@@ -159,12 +160,14 @@ content into your application; rather pick only the properties that you need.
 	server.jetty.acceptors= # Number of acceptor threads to use.
 	server.jetty.max-http-post-size=0 # Maximum size in bytes of the HTTP post or put content.
 	server.jetty.selectors= # Number of selector threads to use.
-	server.jsp-servlet.class-name=org.apache.jasper.servlet.JspServlet # The class name of the JSP servlet.
-	server.jsp-servlet.init-parameters.*= # Init parameters used to configure the JSP servlet
-	server.jsp-servlet.registered=true # Whether or not the JSP servlet is registered
 	server.port=8080 # Server HTTP port.
 	server.server-header= # Value to use for the Server response header (no header is sent if empty)
-	server.servlet-path=/ # Path of the main dispatcher servlet.
+	server.servlet.context-parameters.*= # Servlet context init parameters. For instance `server.servlet.context-parameters.a=alpha`
+	server.servlet.context-path= # Context path of the application.
+	server.servlet.jsp.class-name=org.apache.jasper.servlet.JspServlet # The class name of the JSP servlet.
+	server.servlet.jsp.init-parameters.*= # Init parameters used to configure the JSP servlet
+	server.servlet.jsp.registered=true # Whether or not the JSP servlet is registered
+	server.servlet.path=/ # Path of the main dispatcher servlet.
 	server.use-forward-headers= # If X-Forwarded-* headers should be applied to the HttpRequest.
 	server.session.cookie.comment= # Comment for the session cookie.
 	server.session.cookie.domain= # Domain for the session cookie.
@@ -424,7 +427,7 @@ content into your application; rather pick only the properties that you need.
 	spring.thymeleaf.enabled=true # Enable MVC Thymeleaf view resolution.
 	spring.thymeleaf.encoding=UTF-8 # Template encoding.
 	spring.thymeleaf.excluded-view-names= # Comma-separated list of view names that should be excluded from resolution.
-	spring.thymeleaf.mode=HTML5 # Template mode to be applied to templates. See also StandardTemplateModeHandlers.
+	spring.thymeleaf.mode=HTML # Template mode to be applied to templates. See also org.thymeleaf.templatemode.TemplateMode.
 	spring.thymeleaf.prefix=classpath:/templates/ # Prefix that gets prepended to view names when building a URL.
 	spring.thymeleaf.suffix=.html # Suffix that gets appended to view names when building a URL.
 	spring.thymeleaf.template-resolver-order= # Order of the template resolver in the chain.
@@ -586,6 +589,7 @@ content into your application; rather pick only the properties that you need.
 	spring.data.mongodb.host=localhost # Mongo server host. Cannot be set with uri.
 	spring.data.mongodb.password= # Login password of the mongo server. Cannot be set with uri.
 	spring.data.mongodb.port=27017 # Mongo server port. Cannot be set with uri.
+	spring.data.mongodb.reactive-repositories.enabled=true # Enable Mongo reactive repositories.
 	spring.data.mongodb.repositories.enabled=true # Enable Mongo repositories.
 	spring.data.mongodb.uri=mongodb://localhost/test # Mongo database URI. Cannot be set with host, port and credentials.
 	spring.data.mongodb.username= # Login user of the mongo server. Cannot be set with uri.
@@ -803,9 +807,9 @@ content into your application; rather pick only the properties that you need.
 
 	# EMBEDDED MONGODB ({sc-spring-boot-autoconfigure}/mongo/embedded/EmbeddedMongoProperties.{sc-ext}[EmbeddedMongoProperties])
 	spring.mongodb.embedded.features=SYNC_DELAY # Comma-separated list of features to enable.
-	spring.mongodb.embedded.storage.databaseDir= # Directory used for data storage.
-	spring.mongodb.embedded.storage.oplogSize= # Maximum size of the oplog in megabytes.
-	spring.mongodb.embedded.storage.replSetName= # Name of the replica set.
+	spring.mongodb.embedded.storage.database-dir= # Directory used for data storage.
+	spring.mongodb.embedded.storage.oplog-size= # Maximum size of the oplog in megabytes.
+	spring.mongodb.embedded.storage.repl-set-name= # Name of the replica set.
 	spring.mongodb.embedded.version=2.6.10 # Version of Mongo to use.
 
 	# REDIS ({sc-spring-boot-autoconfigure}/data/redis/RedisProperties.{sc-ext}[RedisProperties])

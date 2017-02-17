@@ -1091,7 +1091,7 @@ only rely on custom converters qualified with `@ConfigurationPropertiesBinding`.
 [[boot-features-external-config-validation]]
 ==== @ConfigurationProperties Validation
 Spring Boot will attempt to validate `@ConfigurationProperties` classes whenever they
-annotated with Spring's `@Validated` annotation. You can use JSR-303 `javax.validation`
+are annotated with Spring's `@Validated` annotation. You can use JSR-303 `javax.validation`
 constraint annotations directly on your configuration class. Simply ensure that a
 compliant JSR-303 implementation is on your classpath, then add constraint annotations to
 your fields:
@@ -3299,7 +3299,8 @@ pooled connection factory by default.
 http://www.mongodb.com/[MongoDB] is an open-source NoSQL document database that uses a
 JSON-like schema instead of traditional table-based relational data. Spring Boot offers
 several conveniences for working with MongoDB, including the
-`spring-boot-starter-data-mongodb` '`Starter`'.
+`spring-boot-starter-data-mongodb` and `spring-boot-starter-data-mongodb-reactive`
+'`Starters`'.
 
 
 
@@ -4596,8 +4597,9 @@ the broker connection is lost. Retries are disabled by default.
 ==== Receiving a message
 When the Rabbit infrastructure is present, any bean can be annotated with
 `@RabbitListener` to create a listener endpoint. If no `RabbitListenerContainerFactory`
-has been defined, a default one is configured automatically.  If a `MessageConverter`
-beans is defined, it is associated automatically to the default factory.
+has been defined, a default one is configured automatically.  If a `MessageConverter` or
+`MessageRecoverer` beans are defined, they are associated automatically to the default
+factory.
 
 The following component creates a listener endpoint on the `someQueue` queue:
 
@@ -4660,9 +4662,11 @@ Then you can use in any `@RabbitListener`-annotated method as follows:
 	}
 ----
 
-You can enable retries to handle situations where your listener throws an exception.
-When retries are exhausted, the message will be rejected and either dropped or routed to a
-dead-letter exchange if the broker is configured so. Retries are disabled by default.
+You can enable retries to handle situations where your listener throws an exception. By
+default `RejectAndDontRequeueRecoverer` is used but you can define a `MessageRecoverer`
+of your own. When retries are exhausted, the message will be rejected and either dropped
+or routed to a dead-letter exchange if the broker is configured so. Retries are disabled
+by default.
 
 IMPORTANT: If retries are not enabled and the listener throws an exception, by default the
 delivery will be retried indefinitely. You can modify this behavior in two ways; set the
@@ -4881,6 +4885,16 @@ exists. The sender can be further customized by configuration items from the `sp
 namespace, see the
 {sc-spring-boot-autoconfigure}/mail/MailProperties.{sc-ext}[`MailProperties`] for more
 details.
+
+In particular, certain default timeout values are infinite and you may want to change that
+to avoid having a thread blocked by an unresponsive mail server:
+
+[source,properties,indent=0]
+----
+	spring.mail.properties.mail.smtp.connecttimeout=5000
+	spring.mail.properties.mail.smtp.timeout=3000
+	spring.mail.properties.mail.smtp.writetimeout=5000
+----
 
 
 
@@ -5146,7 +5160,7 @@ If you use the
 the following provided libraries:
 
 * http://junit.org[JUnit] -- The de-facto standard for unit testing Java applications.
-* {spring-reference}/#integration-testing.html[Spring Test] & Spring Boot Test --
+* {spring-reference}/#integration-testing[Spring Test] & Spring Boot Test --
   Utilities and integration test support for Spring Boot applications.
 * http://joel-costigliola.github.io/assertj/[AssertJ] -- A fluent assertion library.
 * http://hamcrest.org/JavaHamcrest/[Hamcrest] -- A library of matcher objects (also known
@@ -5355,7 +5369,7 @@ more `@AutoConfigure...` annotations that can be used to customize auto-configur
 settings.
 
 NOTE: Each slice loads a very restricted set of auto-configuration classes. If you need to
-exclude one of them, most `@...Test` annotation provide an `excludeAutoConfiguration`
+exclude one of them, most `@...Test` annotations provide an `excludeAutoConfiguration`
 attribute. Alternatively, you can use `@ImportAutoConfiguration#exclude`.
 
 TIP: It's also possible to use the `@AutoConfigure...` annotations with the standard
@@ -5681,7 +5695,7 @@ for `@Document` classes and configure Spring Data MongoDB repositories. Regular
 
 In-memory embedded MongoDB generally works well for tests since it is fast and doesn't
 require any developer installation. If, however, you prefer to run tests against a real
-MongoDB server you should exclude the embedded mongodb auto-configuration:
+MongoDB server you should exclude the embedded MongoDB auto-configuration:
 
 [source,java,indent=0]
 ----

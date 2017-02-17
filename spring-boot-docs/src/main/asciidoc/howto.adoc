@@ -571,7 +571,7 @@ To scan for a free port (using OS natives to prevent clashes) use `server.port=0
 [[howto-discover-the-http-port-at-runtime]]
 === Discover the HTTP port at runtime
 You can access the port the server is running on from log output or from the
-`EmbeddedWebApplicationContext` via its `EmbeddedServletContainer`. The best way to get
+`EmbeddedWebApplicationContext` via its `EmbeddedWebServer`. The best way to get
 that and be sure that it has initialized is to add a `@Bean` of type
 `ApplicationListener<EmbeddedServletContainerInitializedEvent>` and pull the container
 out of the event when it is published.
@@ -1248,42 +1248,6 @@ Check out {sc-spring-boot-autoconfigure}/web/WebMvcAutoConfiguration.{sc-ext}[`W
 
 
 
-[[howto-use-thymeleaf-3]]
-=== Use Thymeleaf 3
-By default, `spring-boot-starter-thymeleaf` uses Thymeleaf 2.1. If you are using the
-`spring-boot-starter-parent`, you can use Thymeleaf 3 by overriding the
-`thymeleaf.version` and `thymeleaf-layout-dialect.version` properties, for example:
-
-[source,xml,indent=0,subs="verbatim,quotes,attributes"]
-----
-	<properties>
-		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
-		<thymeleaf-layout-dialect.version>2.1.1</thymeleaf-layout-dialect.version>
-	</properties>
-----
-
-NOTE: if you are managing dependencies yourself, look at `spring-boot-dependencies` for
-the list of artifacts that are related to those two versions.
-
-To avoid a warning message about the HTML 5 template mode being deprecated and the HTML
-template mode being used instead, you may also want to explicitly configure
-`spring.thymeleaf.mode` to be `HTML`, for example:
-
-[source,properties,indent=0,subs="verbatim,quotes,attributes"]
-----
-	spring.thymeleaf.mode: HTML
-----
-
-Please refer to the
-{github-code}/spring-boot-samples/spring-boot-sample-web-thymeleaf3[Thymeleaf 3 sample] to
-see this in action.
-
-If you are using any of the other auto-configured Thymeleaf Extras (Spring Security,
-Data Attribute, or Java 8 Time) you should also override each of their versions to one
-that is compatible with Thymeleaf 3.0.
-
-
-
 [[howto-http-clients]]
 == HTTP clients
 
@@ -1525,11 +1489,10 @@ You can apply the same principle if you are configuring a custom JNDI `DataSourc
 	}
 ----
 
-
-Spring Boot also provides a utility builder class `DataSourceBuilder` that can be used
-to create one of the standard data sources (if it is on the classpath). The builder can
-detect the one to use based on the ones available on the classpath and it also auto
-detects the driver based on the JDBC url.
+Spring Boot also provides a utility builder class `DataSourceBuilder` that can be used to
+create one of the standard data sources (if it is on the classpath). The builder can
+detect the one to use based on what's available on the classpath. It also auto detects the
+driver based on the JDBC url.
 
 [source,java,indent=0,subs="verbatim,quotes,attributes"]
 ----
@@ -1552,7 +1515,7 @@ There is a catch however. Because the actual type of the connection pool is not 
 no keys are generated in the metadata for your custom `DataSource` and no completion is
 available in your IDE (The `DataSource` interface doesn't expose any property). Also, if
 you happen to _only_ have Hikari on the classpath, this basic setup will not work because
-Hikari has no `url` parameter (but a `jdbcUrl` parameter). You should have to rewrite
+Hikari has no `url` parameter (but a `jdbcUrl` parameter). You will have to rewrite
 your configuration as follows:
 
 [source,properties,indent=0]
@@ -1654,6 +1617,7 @@ This final example configures two data sources on custom namespaces with the sam
 than what Spring Boot would do in auto-configuration.
 
 
+
 [[howto-use-spring-data-repositories]]
 === Use Spring Data repositories
 Spring Data can create implementations for you of `@Repository` interfaces of various
@@ -1704,6 +1668,11 @@ depending on whether you are using an embedded database (`create-drop`) or not (
 The dialect to use is also automatically detected based on the current `DataSource` but
 you can set `spring.jpa.database` yourself if you want to be explicit and bypass that
 check on startup.
+
+NOTE: Specifying a `database` leads to the configuration of a well-defined Hibernate
+dialect. Several databases have more than one `Dialect` and this may not suit your need.
+In that case, you can either set `spring.jpa.database` to `default` to let Hibernate figure
+things out or set the dialect using the `spring.jpa.database-platform` property.
 
 The most common options to set are:
 
@@ -1988,8 +1957,12 @@ Boot will call `Flyway.migrate()` to perform the database migration. If you woul
 more control, provide a `@Bean` that implements
 {sc-spring-boot-autoconfigure}/flyway/FlywayMigrationStrategy.{sc-ext}[`FlywayMigrationStrategy`].
 
-TIP: If you want to make use of http://flywaydb.org/documentation/callbacks.html[Flyway
-callbacks], those scripts should also live in the `classpath:db/migration` folder.
+Flyway supports SQL and Java http://flywaydb.org/documentation/callbacks.html[callbacks].
+To use SQL-based callbacks, place the callback scripts in the `classpath:db/migration`
+folder. To use Java-based callbacks, create one or more beans that implement
+`FlywayCallback` or, preferably, extend `BaseFlywayCallback`. Any such beans will be
+automatically registered with `Flyway`. They can be ordered using `@Order` or by
+implementing `Ordered`.
 
 By default Flyway will autowire the (`@Primary`) `DataSource` in your context and
 use that for migrations. If you like to use a different `DataSource` you can create
@@ -2020,6 +1993,12 @@ To automatically run Liquibase database migrations on startup, add the
 The master change log is by default read from `db/changelog/db.changelog-master.yaml` but
 can be set using `liquibase.change-log`. In addition to YAML, Liquibase also supports
 JSON, XML, and SQL change log formats.
+
+By default Liquibase will autowire the (`@Primary`) `DataSource` in your context and use
+that for migrations. If you like to use a different `DataSource` you can create one and
+mark its `@Bean` as `@LiquibaseDataSource` - if you do that remember to create another one
+and mark it as `@Primary` if you want two data sources. Or you can use Liquibase's native
+`DataSource` by setting `liquibase.[url,user,password]` in external properties.
 
 See
 {sc-spring-boot-autoconfigure}/liquibase/LiquibaseProperties.{sc-ext}[`LiquibaseProperties`]
@@ -2065,6 +2044,11 @@ your application defines, if any.
 
 [[howto-batch-applications]]
 == Batch applications
+
+NOTE: By default, batch applications require a `DataSource` to store job details. If you
+want to deviate from that, you'll need to implement `BatchConfigurer`, see
+{spring-batch-javadoc}/core/configuration/annotation/EnableBatchProcessing.html[The
+Javadoc of @EnableBatchProcessing] for more details.
 
 
 
@@ -2143,9 +2127,9 @@ Actuator HTTP endpoints are only available for Spring MVC-based applications. If
 to use Jersey and still use the actuator you will need to enable Spring MVC (by depending
 on `spring-boot-starter-web`, for example). By default, both Jersey and the Spring MVC
 dispatcher servlet are mapped to the same path (`/`). You will need to change the path for
-one of them (by configuring `server.servlet-path` for Spring MVC or
+one of them (by configuring `server.servlet.path` for Spring MVC or
 `spring.jersey.application-path` for Jersey). For example, if you add
-`server.servlet-path=/system` into `application.properties`, the actuator HTTP endpoints
+`server.servlet.path=/system` into `application.properties`, the actuator HTTP endpoints
 will be available under `/system`.
 
 
@@ -2257,6 +2241,13 @@ There are several options for hot reloading. The recommended approach is to use
 <<using-spring-boot.adoc#using-boot-devtools,`spring-boot-devtools`>> as it provides
 additional development-time features such as support for fast application restarts
 and LiveReload as well as sensible development-time configuration (e.g. template caching).
+Devtools works by monitoring the classpath for changes. This means that static resource
+changes must be "built" for the change to take affect. By default, this happens
+automatically in Eclipse when you save your changes. In IntelliJ IDEA, Make Project will
+trigger the necessary build. Due to the
+<<using-spring-boot.adoc#using-boot-devtools-restart-exclude, default restart
+exclusions>>, changes to static resources will not trigger a restart of your application.
+They will, however, trigger a live reload.
 
 Alternatively, running in an IDE (especially with debugging on) is a good way to do
 development (all modern IDEs allow reloading of static resources and usually also
@@ -2264,8 +2255,8 @@ hot-swapping of Java class changes).
 
 Finally, the <<build-tool-plugins.adoc#build-tool-plugins, Maven and Gradle plugins>> can
 be configured (see the `addResources` property) to support running from the command line
-with reloading of static files. You can use that with an external css/js compiler process
-if you are writing that code with higher level tools.
+with reloading of static files directly from source. You can use that with an external
+css/js compiler process if you are writing that code with higher level tools.
 
 
 
@@ -2857,7 +2848,7 @@ application's main class to extend `SpringBootServletInitializer`:
 
 The next step is to update your build configuration so that your project produces a war file
 rather than a jar file. If you're using Maven and using `spring-boot-starter-parent` (which
-configures Maven's war plugin for you) all you need to do is modify `pom.xml` to change the
+configures Maven's war plugin for you) all you need to do is to modify `pom.xml` to change the
 packaging to war:
 
 [source,xml,indent=0,subs="verbatim,quotes,attributes"]

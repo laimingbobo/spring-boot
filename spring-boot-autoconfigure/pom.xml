@@ -241,7 +241,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.zaxxer</groupId>
-			<artifactId>HikariCP-java6</artifactId>
+			<artifactId>HikariCP</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -297,6 +297,16 @@
 		<dependency>
 			<groupId>org.jboss</groupId>
 			<artifactId>jboss-transaction-spi</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-async</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-reactivestreams</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -528,6 +538,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.social</groupId>
+			<artifactId>spring-social-web-thymeleaf3</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.social</groupId>
 			<artifactId>spring-social-facebook</artifactId>
 			<optional>true</optional>
 		</dependency>
@@ -553,7 +568,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.thymeleaf</groupId>
-			<artifactId>thymeleaf-spring4</artifactId>
+			<artifactId>thymeleaf-spring5</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
@@ -569,11 +584,6 @@
 		<dependency>
 			<groupId>com.github.mxab.thymeleaf.extras</groupId>
 			<artifactId>thymeleaf-extras-data-attribute</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.thymeleaf.extras</groupId>
-			<artifactId>thymeleaf-extras-conditionalcomments</artifactId>
 			<optional>true</optional>
 		</dependency>
 		<dependency>

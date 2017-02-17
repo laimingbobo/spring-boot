@@ -65,9 +65,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.springframework.boot.context.embedded.AbstractEmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.Compression;
-import org.springframework.boot.context.embedded.EmbeddedServletContainer;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerException;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.EmbeddedWebServer;
+import org.springframework.boot.context.embedded.EmbeddedWebServerException;
 import org.springframework.boot.context.embedded.MimeMappings;
 import org.springframework.boot.context.embedded.Ssl;
 import org.springframework.boot.context.embedded.Ssl.ClientAuth;
@@ -149,7 +149,7 @@ public class JettyEmbeddedServletContainerFactory
 	}
 
 	@Override
-	public EmbeddedServletContainer getEmbeddedServletContainer(
+	public EmbeddedWebServer getEmbeddedServletContainer(
 			ServletContextInitializer... initializers) {
 		JettyEmbeddedWebAppContext context = new JettyEmbeddedWebAppContext();
 		int port = (getPort() >= 0 ? getPort() : 0);
@@ -291,7 +291,7 @@ public class JettyEmbeddedServletContainerFactory
 			factory.setKeyStoreResource(Resource.newResource(url));
 		}
 		catch (IOException ex) {
-			throw new EmbeddedServletContainerException(
+			throw new EmbeddedWebServerException(
 					"Could not find key store '" + ssl.getKeyStore() + "'", ex);
 		}
 		if (ssl.getKeyStoreType() != null) {
@@ -312,7 +312,7 @@ public class JettyEmbeddedServletContainerFactory
 				factory.setTrustStoreResource(Resource.newResource(url));
 			}
 			catch (IOException ex) {
-				throw new EmbeddedServletContainerException(
+				throw new EmbeddedWebServerException(
 						"Could not find trust store '" + ssl.getTrustStore() + "'", ex);
 			}
 		}
@@ -423,9 +423,9 @@ public class JettyEmbeddedServletContainerFactory
 		Assert.notNull(context, "Context must not be null");
 		ServletHolder holder = new ServletHolder();
 		holder.setName("jsp");
-		holder.setClassName(getJspServlet().getClassName());
+		holder.setClassName(getJsp().getClassName());
 		holder.setInitParameter("fork", "false");
-		holder.setInitParameters(getJspServlet().getInitParameters());
+		holder.setInitParameters(getJsp().getInitParameters());
 		holder.setInitOrder(3);
 		context.getServletHandler().addServlet(holder);
 		ServletMapping mapping = new ServletMapping();

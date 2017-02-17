@@ -38,6 +38,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.http.client.MockClientHttpResponse;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -46,13 +47,12 @@ import org.springframework.util.ReflectionUtils.MethodCallback;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestOperations;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.DefaultUriTemplateHandler;
-import org.springframework.web.util.UriTemplateHandler;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -102,7 +102,7 @@ public class TestRestTemplateTests {
 	public void restOperationsAreAvailable() throws Exception {
 		RestTemplate delegate = mock(RestTemplate.class);
 		given(delegate.getUriTemplateHandler())
-				.willReturn(new DefaultUriTemplateHandler());
+				.willReturn(new DefaultUriBuilderFactory());
 		final TestRestTemplate restTemplate = new TestRestTemplate(delegate);
 		ReflectionUtils.doWithMethods(RestOperations.class, new MethodCallback() {
 
@@ -427,18 +427,18 @@ public class TestRestTemplateTests {
 		ClientHttpRequestFactory requestFactory = mock(ClientHttpRequestFactory.class);
 		MockClientHttpRequest request = new MockClientHttpRequest();
 		request.setResponse(new MockClientHttpResponse(new byte[0], HttpStatus.OK));
-		URI relativeUri = URI.create("a/b/c.txt");
-		URI absoluteUri = URI.create("http://localhost:8080/" + relativeUri.toString());
+		URI absoluteUri = URI
+				.create("http://localhost:8080/a/b/c.txt?param=%7Bsomething%7D");
 		given(requestFactory.createRequest(eq(absoluteUri), (HttpMethod) any()))
 				.willReturn(request);
 		RestTemplate delegate = new RestTemplate();
 		TestRestTemplate template = new TestRestTemplate(delegate);
 		delegate.setRequestFactory(requestFactory);
-		UriTemplateHandler uriTemplateHandler = mock(UriTemplateHandler.class);
-		given(uriTemplateHandler.expand(relativeUri.toString(), new Object[0]))
-				.willReturn(absoluteUri);
+		LocalHostUriTemplateHandler uriTemplateHandler = new LocalHostUriTemplateHandler(
+				new MockEnvironment());
 		template.setUriTemplateHandler(uriTemplateHandler);
-		callback.doWithTestRestTemplate(template, relativeUri);
+		callback.doWithTestRestTemplate(template,
+				URI.create("/a/b/c.txt?param=%7Bsomething%7D"));
 		verify(requestFactory).createRequest(eq(absoluteUri), (HttpMethod) any());
 	}
 
